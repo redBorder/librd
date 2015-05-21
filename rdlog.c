@@ -115,10 +115,18 @@ void rdputs0 (const char *file, const char *func, int line,
 		of += snprintf(buf+of, sizeof(buf)-of, " ");
 	}
 
+	const int header_of = of;
 	
 	va_start(ap, fmt);
-	of += vsnprintf(buf+of, sizeof(buf)-of, fmt, ap);
+	of += vsnprintf(buf+header_of, sizeof(buf)-header_of, fmt, ap);
 	va_end(ap);
+
+	if( of > sizeof(buf) - header_of ){
+		// Should we log a log buffer overflow? should we care about 
+		// log overflow log overflows?
+		of = sizeof(buf)-2;
+		buf[of-1] = buf[of-2] = buf[of-3] = '.';
+	}
 
 	buf[of++] = '\n';
 	buf[of] = '\0';
