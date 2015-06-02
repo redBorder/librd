@@ -89,6 +89,7 @@ void rdputs0 (const char *file, const char *func, int line,
 	int r RD_UNUSED;
 	rd_ts_t now;
 	static __thread char thrname[16];
+	int printf_rc;
 
 	if (severity > rd_current_severity)
 		return;
@@ -115,17 +116,17 @@ void rdputs0 (const char *file, const char *func, int line,
 		of += snprintf(buf+of, sizeof(buf)-of, " ");
 	}
 
-	const int header_of = of;
-	
 	va_start(ap, fmt);
-	of += vsnprintf(buf+header_of, sizeof(buf)-header_of, fmt, ap);
+	printf_rc = vsnprintf(buf+of, sizeof(buf)-of, fmt, ap);
 	va_end(ap);
 
-	if( of > sizeof(buf) - header_of ){
+	if( printf_rc > sizeof(buf) - of ) {
 		// Should we log a log buffer overflow? should we care about 
 		// log overflow log overflows?
 		of = sizeof(buf)-2;
 		buf[of-1] = buf[of-2] = buf[of-3] = '.';
+	} else {
+		of += printf_rc;
 	}
 
 	buf[of++] = '\n';
